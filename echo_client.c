@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	int sock;//소켓생성//
 	struct sockaddr_in serv_addr;//소켓주소//
 	char message[BUF_SIZE];//메세지 크기//
-	int str_len;
+	int str_len,recv_len,recv_cnt;//길이
 	if(argc!=3)//ip sock port//
 	{
 		printf("usage:%s <IP> <port> \n",argv[0]);
@@ -39,9 +39,18 @@ int main(int argc, char *argv[])
 		if(!strcmp(message,"q\n")||!strcmp(message,"q\n"))
 			break;
 
-		write(sock,message,strlen(message));
-		str_len=read(sock,message,sizeof(message)-1);
-		message[str_len]=0;
+		str_len = write(sock,message,strlen(message));
+		recv_len=0;
+		while(recv_len<str_len)
+		{
+			recv_cnt=read(sock,&message[recv_len],BUF_SIZE-1);
+			if (recv_cnt==-1)
+			{
+				error_handling("read(),error");
+				recv_len+=recv_cnt;
+			}
+		}
+		message[recv_len]=0;
 		printf("message from server :%s \n",message);
 	}
 	close(sock);//소켓종료
